@@ -19,6 +19,11 @@ User (browser)
    v  (GET /{shortCode})
 [API Gateway] --> [Lambda: redirect_url.py] --> [DynamoDB: UrlShortener table] --> 302 redirect
 ```
+## Progress
+
+- DynamoDB table (`UrlShortener`) created in AWS (eu-west-1)
+- `create-short-url` Lambda function deployed, given DynamoDB permissions via IAM, and tested successfully — returns a working shortCode and shortUrl
+
 
 **Why this design:**
 - **S3** hosts the front-end as a static site — no server to manage, cheap and simple for a form-only UI.
@@ -46,14 +51,3 @@ User (browser)
 5. **Update `API_ENDPOINT`** in `index.html` to match your `/create` route.
 6. **Deploy `index.html` to an S3 bucket** with static website hosting enabled.
 
-## What I'd add with more time
-- Custom short codes (let users pick their own)
-- Click analytics (count how many times a short URL was visited)
-- Expiry dates for short URLs
-- Rate limiting to prevent abuse
-
-## What I learned
-- How API Gateway routes HTTP requests to specific Lambda functions
-- DynamoDB's key-value access pattern and why it fits this use case
-- Handling CORS between a static S3 site and an API Gateway backend
-- IAM least-privilege permissions for Lambda-to-DynamoDB access
