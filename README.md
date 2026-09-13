@@ -23,6 +23,7 @@ User (browser)
 
 - DynamoDB table (`UrlShortener`) created in AWS (eu-west-1)
 - `create-short-url` Lambda function deployed, given DynamoDB permissions via IAM, and tested successfully — returns a working shortCode and shortUrl
+- `redirect-url` Lambda deployed, tested — correctly returns 404 for unknown codes
 
 
 **Why this design:**
