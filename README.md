@@ -21,10 +21,11 @@ User (browser)
 ```
 ## Progress
 
-- DynamoDB table (`UrlShortener`) created in AWS (eu-west-1)
-- `create-short-url` Lambda function deployed, given DynamoDB permissions via IAM, and tested successfully — returns a working shortCode and shortUrl
-- `redirect-url` Lambda deployed, tested — correctly returns 404 for unknown codes
-
+- ✅ DynamoDB table (`URLShortener`) created in AWS (eu-west-1... wait, eu-west-1 Ireland)
+- ✅ `create-short-url` and `redirect-url` Lambda functions deployed and tested
+- ✅ API Gateway wired up with POST /create and GET /{shortCode}, CORS enabled
+- ✅ Front-end hosted on S3, live and fully working end-to-end
+- ✅ Full pipeline tested: create a short URL → redirect works correctly
 
 **Why this design:**
 - **S3** hosts the front-end as a static site — no server to manage, cheap and simple for a form-only UI.
