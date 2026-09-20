@@ -1,36 +1,178 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Serverless URL Shortener</title>
-  <style>
-    body { font-family: sans-serif; max-width: 500px; margin: 60px auto; padding: 0 20px; }
-    input, button { padding: 10px; font-size: 16px; }
-    input { width: 70%; }
-    button { cursor: pointer; }
-    #result { margin-top: 20px; word-break: break-all; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shorten — a serverless URL shortener</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #EEF2F5;
+    --card: #FFFFFF;
+    --ink: #16202B;
+    --ink-soft: #4A5A68;
+    --accent: #2F6F5E;
+    --accent-dark: #215043;
+    --line: #D7E0E6;
+    --error: #B3432B;
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 20px;
+  }
+
+  .wrap {
+    width: 100%;
+    max-width: 560px;
+  }
+
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin: 0 0 8px 2px;
+  }
+
+  h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: clamp(28px, 5vw, 38px);
+    line-height: 1.15;
+    margin: 0 0 28px 2px;
+    letter-spacing: -0.01em;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: 0 1px 2px rgba(22, 32, 43, 0.04);
+  }
+
+  .field-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  input[type="url"] {
+    flex: 1;
+    min-width: 0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 15px;
+    padding: 14px 16px;
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    background: var(--bg);
+    color: var(--ink);
+    transition: border-color 0.15s ease;
+  }
+
+  input[type="url"]:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  input[type="url"]::placeholder {
+    color: #8FA0AC;
+  }
+
+  button {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 500;
+    font-size: 15px;
+    padding: 14px 22px;
+    border: none;
+    border-radius: 10px;
+    background: var(--accent);
+    color: #F2F7F5;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    white-space: nowrap;
+  }
+
+  button:hover { background: var(--accent-dark); }
+  button:focus-visible { outline: 2px solid var(--accent-dark); outline-offset: 2px; }
+  button:disabled { background: #9BB3AC; cursor: default; }
+
+  .result {
+    margin-top: 18px;
+    min-height: 20px;
+  }
+
+  .status-line {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    color: var(--ink-soft);
+    word-break: break-all;
+  }
+
+  .status-line a {
+    color: var(--accent-dark);
+  }
+
+  .status-line.error { color: var(--error); }
+
+  footer {
+    margin-top: 22px;
+    font-size: 12px;
+    color: var(--ink-soft);
+    text-align: center;
+  }
+
+  @media (max-width: 480px) {
+    .field-row { flex-direction: column; }
+    button { width: 100%; }
+  }
+</style>
 </head>
 <body>
-  <h2>Shorten a URL</h2>
-  <input id="longUrl" type="text" placeholder="Paste your long URL here">
-  <button onclick="shortenUrl()">Shorten</button>
-  <div id="result"></div>
+  <div class="wrap">
+    <p class="eyebrow">serverless · aws lambda + dynamodb + api gateway</p>
+    <h1>Turn a long link into something you'd actually share.</h1>
+
+    <div class="card">
+      <div class="field-row">
+        <input type="url" id="longUrl" placeholder="https://example.com/a/very/long/path" />
+        <button id="shortenBtn" onclick="shortenUrl()">Shorten</button>
+      </div>
+
+      <div class="result" id="result"></div>
+    </div>
+
+    <footer>Links are stored in a live DynamoDB table — refresh and they're still there.</footer>
+  </div>
 
   <script>
-    // Replace with your actual API Gateway invoke URL for the "create" endpoint
     const API_ENDPOINT = "https://hrm92obrd9.execute-api.eu-west-1.amazonaws.com/prod/create";
 
     async function shortenUrl() {
-      const longUrl = document.getElementById("longUrl").value;
+      const input = document.getElementById("longUrl");
       const resultDiv = document.getElementById("result");
+      const btn = document.getElementById("shortenBtn");
+      const longUrl = input.value.trim();
 
       if (!longUrl) {
-        resultDiv.textContent = "Please enter a URL.";
+        resultDiv.innerHTML = `<p class="status-line error">Add a URL first — the field's empty.</p>`;
         return;
       }
 
-      resultDiv.textContent = "Shortening...";
+      btn.disabled = true;
+      btn.textContent = "Shortening…";
+      resultDiv.innerHTML = `<p class="status-line">Contacting the API…</p>`;
 
       try {
         const response = await fetch(API_ENDPOINT, {
@@ -42,14 +184,22 @@
         const data = await response.json();
 
         if (data.shortUrl) {
-          resultDiv.innerHTML = `Short URL: <a href="${data.shortUrl}" target="_blank">${data.shortUrl}</a>`;
+          resultDiv.innerHTML = `<p class="status-line">Short URL: <a href="${data.shortUrl}" target="_blank">${data.shortUrl}</a></p>`;
+          input.value = "";
         } else {
-          resultDiv.textContent = "Error: " + (data.error || "Unknown error");
+          resultDiv.innerHTML = `<p class="status-line error">The API didn't return a short link: ${data.error || "unknown error"}</p>`;
         }
       } catch (err) {
-        resultDiv.textContent = "Request failed: " + err.message;
+        resultDiv.innerHTML = `<p class="status-line error">Couldn't reach the API — check your connection and try again.</p>`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Shorten";
       }
     }
+
+    document.getElementById("longUrl").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") shortenUrl();
+    });
   </script>
 </body>
 </html>
