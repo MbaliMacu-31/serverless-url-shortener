@@ -206,6 +206,70 @@
     .field-row { flex-direction: column; }
     button { width: 100%; }
   }
+
+  .architecture {
+    margin-top: 40px;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+  }
+
+  .arch-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin: 0 0 18px 2px;
+  }
+
+  .arch-diagram {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .arch-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 12px;
+    min-width: 88px;
+    color: var(--accent-dark);
+  }
+
+  .arch-node span {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .arch-node small {
+    font-size: 11px;
+    color: var(--ink-soft);
+    text-align: center;
+  }
+
+  .arch-arrow {
+    color: var(--ink-soft);
+    font-size: 16px;
+  }
+
+  .arch-note {
+    margin-top: 20px;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+  }
+
+  @media (max-width: 480px) {
+    .arch-diagram { flex-direction: column; }
+    .arch-arrow { transform: rotate(90deg); }
+  }
 </style>
 </head>
 <body>
@@ -228,6 +292,36 @@
     </div>
 
     <footer>Links are stored in a live DynamoDB table — refresh and they're still there.</footer>
+
+    <section class="architecture">
+      <p class="arch-label">What's actually running</p>
+      <div class="arch-diagram">
+        <div class="arch-node">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="4" y="8" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M4 12h20" stroke="currentColor" stroke-width="1.6"/><path d="M9 4h10l2 4H7l2-4Z" stroke="currentColor" stroke-width="1.6"/></svg>
+          <span>S3</span>
+          <small>hosts this page</small>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="10" stroke="currentColor" stroke-width="1.6"/><path d="M14 4v4M14 20v4M4 14h4M20 14h4" stroke="currentColor" stroke-width="1.6"/></svg>
+          <span>API Gateway</span>
+          <small>routes the request</small>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M16 3 6 16h7l-2 9 11-14h-8l2-8Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          <span>Lambda</span>
+          <small>generates the code</small>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><ellipse cx="14" cy="7" rx="9" ry="3.5" stroke="currentColor" stroke-width="1.6"/><path d="M5 7v14c0 1.9 4 3.5 9 3.5s9-1.6 9-3.5V7" stroke="currentColor" stroke-width="1.6"/><path d="M5 14c0 1.9 4 3.5 9 3.5s9-1.6 9-3.5" stroke="currentColor" stroke-width="1.6"/></svg>
+          <span>DynamoDB</span>
+          <small>stores the mapping</small>
+        </div>
+      </div>
+      <p class="arch-note">Two Lambda functions do the work: one writes a new shortCode to DynamoDB when you shorten a link, the other reads it back and issues a redirect when someone visits the short link. No servers stay running between requests — everything above only runs for the milliseconds it takes to answer.</p>
+    </section>
   </div>
 
   <script>
