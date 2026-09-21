@@ -126,6 +126,38 @@
 
   .status-line.error { color: var(--error); }
 
+  .result-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+
+  .result-row a {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    color: var(--accent-dark);
+    text-decoration: none;
+    word-break: break-all;
+    flex: 1;
+  }
+
+  .result-row a:hover { text-decoration: underline; }
+
+  .copy-btn {
+    background: transparent;
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
+    padding: 6px 12px;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+
+  .copy-btn:hover { background: var(--line); color: var(--ink); }
+
   footer {
     margin-top: 22px;
     font-size: 12px;
@@ -159,6 +191,14 @@
   <script>
     const API_ENDPOINT = "https://hrm92obrd9.execute-api.eu-west-1.amazonaws.com/prod/create";
 
+    function copyToClipboard(text, btn) {
+      navigator.clipboard.writeText(text).then(() => {
+        const original = btn.textContent;
+        btn.textContent = "Copied";
+        setTimeout(() => { btn.textContent = original; }, 1500);
+      });
+    }
+
     async function shortenUrl() {
       const input = document.getElementById("longUrl");
       const resultDiv = document.getElementById("result");
@@ -184,7 +224,12 @@
         const data = await response.json();
 
         if (data.shortUrl) {
-          resultDiv.innerHTML = `<p class="status-line">Short URL: <a href="${data.shortUrl}" target="_blank">${data.shortUrl}</a></p>`;
+          resultDiv.innerHTML = `
+            <div class="result-row">
+              <a href="${data.shortUrl}" target="_blank">${data.shortUrl}</a>
+              <button class="copy-btn" onclick="copyToClipboard('${data.shortUrl}', this)">Copy</button>
+            </div>
+          `;
           input.value = "";
         } else {
           resultDiv.innerHTML = `<p class="status-line error">The API didn't return a short link: ${data.error || "unknown error"}</p>`;
