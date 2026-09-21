@@ -158,6 +158,43 @@
 
   .copy-btn:hover { background: var(--line); color: var(--ink); }
 
+  .recent {
+    margin-top: 28px;
+  }
+
+  .recent-label {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+  }
+
+  .recent-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+  }
+
+  .recent-item:last-child { border-bottom: none; }
+
+  .recent-original {
+    color: var(--ink-soft);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+  }
+
+  .recent-short a {
+    color: var(--accent-dark);
+    text-decoration: none;
+  }
+
+  .recent-short a:hover { text-decoration: underline; }
+
   footer {
     margin-top: 22px;
     font-size: 12px;
@@ -183,6 +220,11 @@
       </div>
 
       <div class="result" id="result"></div>
+
+      <div class="recent" id="recentSection" style="display:none;">
+        <p class="recent-label">Shortened this session</p>
+        <div id="recentList"></div>
+      </div>
     </div>
 
     <footer>Links are stored in a live DynamoDB table — refresh and they're still there.</footer>
@@ -190,6 +232,23 @@
 
   <script>
     const API_ENDPOINT = "https://hrm92obrd9.execute-api.eu-west-1.amazonaws.com/prod/create";
+    const recent = [];
+
+    function renderRecent() {
+      const section = document.getElementById("recentSection");
+      const list = document.getElementById("recentList");
+      if (recent.length === 0) {
+        section.style.display = "none";
+        return;
+      }
+      section.style.display = "block";
+      list.innerHTML = recent.slice().reverse().map(item => `
+        <div class="recent-item">
+          <span class="recent-original">${item.original}</span>
+          <span class="recent-short"><a href="${item.short}" target="_blank">${item.short.replace('https://', '')}</a></span>
+        </div>
+      `).join("");
+    }
 
     function copyToClipboard(text, btn) {
       navigator.clipboard.writeText(text).then(() => {
@@ -230,6 +289,8 @@
               <button class="copy-btn" onclick="copyToClipboard('${data.shortUrl}', this)">Copy</button>
             </div>
           `;
+          recent.push({ original: longUrl, short: data.shortUrl });
+          renderRecent();
           input.value = "";
         } else {
           resultDiv.innerHTML = `<p class="status-line error">The API didn't return a short link: ${data.error || "unknown error"}</p>`;
