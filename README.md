@@ -4,9 +4,6 @@ A small serverless application built on AWS that shortens long URLs and redirect
 
 **Live site:** http://mbali-url-shortener-2026.s3-website-eu-west-1.amazonaws.com
 
-## Demo Video
-[Link to your 5-10 min unlisted YouTube demo here]
-
 ## Architecture
 
 ```
@@ -69,3 +66,6 @@ User (browser)
 - DynamoDB's key-value access pattern and why it fits this use case
 - Debugging a case-sensitive table name mismatch between an environment variable and the actual DynamoDB table
 - IAM least-privilege permissions for Lambda-to-DynamoDB access
+
+## Verification Code:
+WTC-FV9TR6UG
